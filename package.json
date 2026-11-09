@@ -4,6 +4,6 @@
   "private": true,
   "description": "VLANesia - simulasi interaktif VLAN berbasis web untuk siswa X TJKT",
   "main": "server.js",
-  "engines": { "node": "20.x" },
+  "engines": { "node": "26.x" },
   "scripts": { "start": "node server.js" }
 }
