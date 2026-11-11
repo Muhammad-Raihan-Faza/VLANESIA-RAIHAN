@@ -44,9 +44,12 @@ function showView(name){
   $$('.view').forEach(v=>v.classList.remove('active'));
   $(`#view-${name}`).classList.add('active');
   $$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  const activeBtn=$(`.nav button[data-view="${name}"]`);
+  if(activeBtn && activeBtn.scrollIntoView) activeBtn.scrollIntoView({inline:'center',block:'nearest'});
   $('#viewTitle').textContent = ({home:'Beranda',material:'Materi',guide:'Petunjuk',simulation:'Simulasi',diagnostic:'Diagnostik',evaluation:'Evaluasi',dashboard:'Dashboard Guru'})[name];
   $('#sidebar').classList.remove('open');
   if(name==='dashboard') loadDashboard();
+  if(name==='simulation') requestAnimationFrame(drawLinks);
   logAction('OPEN_VIEW',name);
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -96,7 +99,7 @@ $('#profileBtn').addEventListener('click',()=>{ if(confirm('Buat sesi baru denga
 
 function renderMaterials(){
   $('#materialTabs').innerHTML=materials.map((m,i)=>`<button class="${i===0?'active':''}" data-mid="${m.id}">${m.title}</button>`).join('');
-  const render=(m)=>$('#materialContent').innerHTML=`<span class="eyebrow">MATERI VLANESIA</span><h2>${m.heading}</h2>${m.body}<button class="btn primary" data-next-mat>Materi Berikutnya →</button>`;
+  const render=(m)=>$('#materialContent').innerHTML=`<h2>${m.heading}</h2>${m.body}<button class="btn primary" data-next-mat>Materi berikutnya</button>`;
   render(materials[0]);
   $('#materialTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return; $$('#materialTabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');const m=materials.find(x=>x.id===b.dataset.mid);render(m);logAction('READ_MATERIAL',m.id)});
   $('#materialContent').addEventListener('click',e=>{if(!e.target.matches('[data-next-mat]'))return; const active=$('#materialTabs button.active'); const idx=materials.findIndex(x=>x.id===active.dataset.mid); const next=$$('#materialTabs button')[Math.min(idx+1,materials.length-1)]; next.click();});
@@ -125,28 +128,56 @@ function updateNextCommandSuggestion(){
   const total=s.commands.length;
   const idx=Math.min(guidedStep,total);
   const done=idx>=total;
-  const next=done?'Semua langkah inti selesai — lanjut Uji Ping':s.commands[idx];
+  const next=done?'Semua langkah inti selesai. Lanjut uji ping':s.commands[idx];
   const nextText=$('#nextCommandText'); const input=$('#cliInput'); const prog=$('#cliProgressText'); const insert=$('#nextCommandInsert');
   if(nextText) nextText.textContent=next;
   if(input) input.placeholder=done?'Konfigurasi inti selesai. Kamu tetap bisa mengetik perintah lain.':`Saran berikutnya: ${next}`;
   if(prog) prog.textContent=done?`Selesai ${total}/${total} langkah`:`Langkah ${idx+1} dari ${total}`;
-  if(insert){insert.disabled=done;insert.textContent=done?'✓ Selesai':'Isi perintah →';}
-  $$('#commandGuideList .command-guide-item').forEach((el,i)=>{el.classList.toggle('done',i<idx);el.classList.toggle('current',i===idx&&!done);const b=el.querySelector('b');if(b)b.textContent=i<idx?'Selesai':(i===idx&&!done?'NEXT':'Isi →');});
+  if(insert){insert.disabled=done;insert.textContent=done?'✓ Selesai':'Isi ke terminal';}
+  $$('#commandGuideList .command-guide-item').forEach((el,i)=>{el.classList.toggle('done',i<idx);el.classList.toggle('current',i===idx&&!done);const b=el.querySelector('b');if(b)b.textContent=i<idx?'Selesai':(i===idx&&!done?'Berikutnya':'Isi');});
 }
 function renderCommandGuide(){
   const s=scenarios[currentScenario];
   $('#commandGuideTitle').textContent=s.guideTitle;
   $('#commandGuideMeta').textContent=s.guideMeta+' Jalankan satu perintah per baris agar prompt CLI berubah sesuai mode.';
-  $('#commandGuideList').innerHTML=s.commands.map((cmd,i)=>`<button type="button" class="command-guide-item" data-command="${cmd.replace(/"/g,'&quot;')}"><span>${String(i+1).padStart(2,'0')}</span><code>${cmd}</code><b>Isi →</b></button>`).join('');
+  $('#commandGuideList').innerHTML=s.commands.map((cmd,i)=>`<button type="button" class="command-guide-item" data-command="${cmd.replace(/"/g,'&quot;')}"><span>${String(i+1).padStart(2,'0')}</span><code>${cmd}</code><b>Isi</b></button>`).join('');
   updateNextCommandSuggestion();
 }
 
 function renderTopology(){
   const s=scenarios[currentScenario];
   $('#levelLabel').textContent=s.level; $('#scenarioDesc').textContent=s.desc; $('#missionText').textContent=s.mission;
-  $('#topology').innerHTML=`<div class="packet-layer" id="packetLayer"></div><div class="device switch"><b>SW1</b><small>${s.level>1?'Trunk / routing lab':'Catalyst 2960'}</small></div>${['PC1','PC2','PC3','PC4'].map((pc,i)=>`<div class="device pc pc${i+1}" data-pc="${pc}"><b>${pc}</b><small>${cliState.ips[pc]}<br>${portForPC(pc)} · VLAN ${cliState.ports[portForPC(pc)]}</small></div>`).join('')}<div class="linkline" style="left:50%;top:94px;width:230px;transform:rotate(145deg)"></div><div class="linkline" style="left:50%;top:94px;width:150px;transform:rotate(124deg)"></div><div class="linkline" style="left:50%;top:94px;width:150px;transform:rotate(56deg)"></div><div class="linkline" style="left:50%;top:94px;width:230px;transform:rotate(35deg)"></div><div class="packet-status hidden" id="packetStatus"></div>`;
+  const pcs=['PC1','PC2','PC3','PC4'];
+  const vlanOf=pc=>cliState.ports[portForPC(pc)];
+  // Kabel digambar sebagai <line> (posisinya dihitung di drawLinks), warna mengikuti VLAN port.
+  $('#topology').innerHTML=
+    `<svg class="topo-lines" aria-hidden="true">${pcs.map((pc,i)=>`<line class="vl${vlanOf(pc)}" data-for="${i+1}"></line>`).join('')}</svg>`+
+    `<div class="packet-layer" id="packetLayer"></div>`+
+    `<div class="device switch"><b>SW1</b><small>${s.level>1?'Trunk / routing lab':'Catalyst 2960'}</small></div>`+
+    `<div class="topo-pcs">${pcs.map((pc,i)=>`<div class="device pc pc${i+1} vl${vlanOf(pc)}" data-pc="${pc}"><b>${pc}</b><em class="vtag">VLAN ${vlanOf(pc)}</em><small>${cliState.ips[pc]}</small><small>${portForPC(pc)}</small></div>`).join('')}</div>`+
+    `<div class="packet-status hidden" id="packetStatus"></div>`;
   renderVlanTable(); renderChecklist(); renderCommandGuide();
+  drawLinks();
 }
+// Menghitung ulang posisi kabel dari posisi nyata elemen, sehingga selalu pas di ukuran layar apa pun.
+function drawLinks(){
+  const top=$('#topology'); if(!top) return;
+  const svg=top.querySelector('.topo-lines'), sw=top.querySelector('.device.switch');
+  if(!svg||!sw) return;
+  const tr=top.getBoundingClientRect(); if(!tr.width||!tr.height) return;
+  const sr=sw.getBoundingClientRect();
+  const x1=sr.left-tr.left+sr.width/2, y1=sr.bottom-tr.top-1;
+  svg.setAttribute('viewBox',`0 0 ${tr.width} ${tr.height}`);
+  svg.querySelectorAll('line').forEach(ln=>{
+    const pc=top.querySelector('.pc'+ln.dataset.for); if(!pc) return;
+    const r=pc.getBoundingClientRect();
+    ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
+    ln.setAttribute('x2',r.left-tr.left+r.width/2); ln.setAttribute('y2',r.top-tr.top+1);
+  });
+}
+window.addEventListener('resize',()=>requestAnimationFrame(drawLinks));
+window.addEventListener('orientationchange',()=>setTimeout(drawLinks,250));
+if(window.ResizeObserver){ const ro=new ResizeObserver(()=>drawLinks()); const t=$('#topology'); if(t) ro.observe(t); }
 function portForPC(pc){return ({PC1:'Fa0/1',PC2:'Fa0/2',PC3:'Fa0/3',PC4:'Fa0/4'})[pc]}
 function renderVlanTable(){
   const ids=Object.keys(cliState.vlans).map(Number).sort((a,b)=>a-b);
@@ -274,13 +305,15 @@ $('#pingBtn').addEventListener('click',async()=>{
   const d=lastDiagnosis;
   const score=Math.max(20,100-(hintsUsed*15)-(d.success?0:30));
   const pingText=d.success?`Pinging target...\nReply from target: bytes=32 time<1ms TTL=128\nReply from target: bytes=32 time<1ms TTL=128\n\nPackets: Sent = 2, Received = 2, Lost = 0 (0% loss)`:`Pinging target...\nRequest timed out.\nRequest timed out.\n\nPackets: Sent = 2, Received = 0, Lost = 2 (100% loss)`;
-  localStorage.setItem('vlanesia_diag',JSON.stringify({...d,pingText}));
+  d.pingText=pingText; // PERBAIKAN: tanpa ini renderDiagnostic() error dan halaman Diagnostik tidak pernah terbuka
+  try{ localStorage.setItem('vlanesia_diag',JSON.stringify(d)); }catch(e){}
   btn.classList.add('pinging');
-  await animatePingEnvelope(d.success,d.error);
+  try{ await animatePingEnvelope(d.success,d.error); }catch(e){}
   btn.classList.remove('pinging');
   if(session) await api('/api/attempt',{method:'POST',body:JSON.stringify({sessionId:session.id,scenario:currentScenario,level:scenarios[currentScenario].level,success:d.success,score,hintsUsed,errorType:d.error,diagnosis:d.explanation})}).catch(()=>{});
-  renderDiagnostic();showView('diagnostic');toast(d.success?'Ping berhasil — amplop Reply kembali ke pengirim!':'Ping timeout — amplop berhenti di titik gangguan.');
-  btn.disabled=false; btn.textContent=oldText;
+  try{ renderDiagnostic(); }catch(e){ console.error(e); }
+  btn.disabled=false; btn.textContent=oldText;   // selalu aktifkan lagi tombolnya
+  showView('diagnostic');toast(d.success?'Ping berhasil. Paket balasan kembali ke pengirim.':'Ping timeout. Paket berhenti di titik gangguan.');
 });
 
 function formatPingOutput(text, success){
@@ -299,7 +332,7 @@ function renderDiagnostic(){
   const loss=d.success?'0%':'100%';
   const focus=d.success?'Konektivitas sesuai skenario':(d.error||'Perlu diagnosis lanjutan');
   const nextAction=d.success?'Lanjut ke evaluasi atau coba skenario lain':(d.steps.find(([,status])=>status!=='OK')?.[0]||'Periksa kembali konfigurasi');
-  $('#pingOutput').innerHTML=formatPingOutput(d.pingText,d.success);
+  $('#pingOutput').innerHTML=formatPingOutput(d.pingText||'',d.success);
   $('#pingBadge').textContent=d.success?'Berhasil':'Timeout'; $('#pingBadge').className=`badge ${d.success?'good':'bad'}`;
   const pingCard=$('#pingCard');
   if(pingCard){ pingCard.classList.toggle('success',!!d.success); pingCard.classList.toggle('failure',!d.success); }
@@ -309,7 +342,7 @@ function renderDiagnostic(){
 }
 
 function renderQuiz(){
-  $('#quizList').innerHTML=questions.map((q,i)=>`<div class="quiz-card card"><span class="eyebrow">SOAL ${i+1}</span><h3>${q.q}</h3><div class="options">${q.opts.map((o,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}" required><span>${String.fromCharCode(65+j)}. ${o}</span></label>`).join('')}</div></div>`).join('');
+  $('#quizList').innerHTML=questions.map((q,i)=>`<div class="quiz-card card"><span class="eyebrow">Soal ${i+1}</span><h3>${q.q}</h3><div class="options">${q.opts.map((o,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}" required><span>${String.fromCharCode(65+j)}. ${o}</span></label>`).join('')}</div></div>`).join('');
 }
 $('#evaluationForm').addEventListener('submit',async e=>{
   e.preventDefault(); const form=e.currentTarget; const btn=form.querySelector('button[type=submit]'); const oldText=btn.textContent; btn.disabled=true;btn.textContent='Mengirim...';

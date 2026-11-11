@@ -2,92 +2,149 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e2238" />
   <title>VLANesia — Simulasi Interaktif VLAN</title>
+  <link rel="icon" href="/assets/vlanesia-logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=20261109a" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css?v=20261111a" />
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar" id="sidebar">
-      <div class="brand">
-        <img class="brand-logo" src="/assets/vlanesia-logo.png" alt="Logo VLANesia">
-        <div><strong>VLANesia</strong><span>Network Learning Lab</span></div>
+
+    <!-- ========== HEADER (logo + menu + profil) ========== -->
+    <header class="site-header" id="sidebar">
+      <div class="header-inner">
+        <div class="brand">
+          <img class="brand-logo" src="/assets/vlanesia-logo.png" alt="Logo VLANesia" width="44" height="44">
+          <div><strong>VLANesia</strong><span>Network learning lab</span></div>
+        </div>
+
+        <nav class="nav" id="nav" aria-label="Menu utama">
+          <button data-view="home" class="active"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg><span>Beranda</span></button>
+          <button data-view="material"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z"/></svg><span>Materi</span></button>
+          <button data-view="guide"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1.1.9-1.1 1.7"/><path d="M12 17h.01"/></svg><span>Petunjuk</span></button>
+          <button data-view="simulation"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 9 3 3-3 3"/><path d="M13 15h4"/></svg><span>Simulasi</span></button>
+          <button data-view="diagnostic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg><span>Diagnostik</span></button>
+          <button data-view="evaluation"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.8 2.8L16 9.8"/></svg><span>Evaluasi</span></button>
+          <button data-view="dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10"/><path d="M12 20V4"/><path d="M19 20v-7"/></svg><span>Dashboard guru</span></button>
+        </nav>
+
+        <div class="top-actions">
+          <div class="status-dot" title="Status database"><i></i><span>Supabase Global</span></div>
+          <button class="profile-chip" id="profileBtn" aria-label="Ganti sesi"><span id="profileInitial">S</span><b id="profileAlias">Siswa</b></button>
+        </div>
       </div>
-      <nav class="nav" id="nav">
-        <button data-view="home" class="active">⌂ <span>Beranda</span></button>
-        <button data-view="material">▤ <span>Materi</span></button>
-        <button data-view="guide">? <span>Petunjuk</span></button>
-        <button data-view="simulation">⌘ <span>Simulasi</span></button>
-        <button data-view="diagnostic">◎ <span>Diagnostik</span></button>
-        <button data-view="evaluation">✓ <span>Evaluasi</span></button>
-        <button data-view="dashboard">▥ <span>Dashboard Guru</span></button>
-      </nav>
-      <div class="sidebar-foot">
-        <div class="mini-badge">SIMULASI EDUKATIF</div>
-        <small>Bukan emulator Cisco IOS. Dibuat sebagai pendamping Cisco Packet Tracer.</small>
-      </div>
-    </aside>
+      <!-- elemen di bawah dipertahankan karena dipakai app.js -->
+      <button class="icon-btn mobile-only" id="menuBtn" aria-hidden="true" tabindex="-1">☰</button>
+      <span id="viewTitle" class="sr-only">Beranda</span>
+    </header>
 
     <main class="main">
-      <header class="topbar">
-        <button class="icon-btn mobile-only" id="menuBtn">☰</button>
-        <div class="breadcrumb"><span id="viewTitle">Beranda</span><small>Kelas X TJKT · Fase E</small></div>
-        <div class="top-actions">
-          <div class="status-dot"><i></i><span>Supabase Global</span></div>
-          <button class="profile-chip" id="profileBtn"><span id="profileInitial">S</span><b id="profileAlias">Siswa</b></button>
-        </div>
-      </header>
 
+      <!-- ========== BERANDA ========== -->
       <section class="view active" id="view-home">
-        <div class="hero card hero-grid">
+        <div class="hero">
           <div class="hero-copy">
-            <div class="eyebrow">VLAN LEARNING EXPERIENCE</div>
-            <h1>Pahami VLAN dengan<br><span>mencoba, menguji, memperbaiki.</span></h1>
-            <p>Latihan interaktif konfigurasi VLAN berbasis web untuk membantu siswa memahami VLAN ID, access port, trunk, ping, dan troubleshooting sebelum praktik di Cisco Packet Tracer.</p>
-            <div class="hero-actions"><button class="btn primary" data-goto="simulation">Mulai Simulasi →</button><button class="btn ghost" data-goto="material">Pelajari Konsep</button></div>
-            <div class="hero-meta"><span>● 3 level</span><span>● 5+ kasus</span><span>● Feedback langsung</span></div>
+            <p class="hero-kicker"><i class="led"></i> Untuk siswa X TJKT · Fase E</p>
+            <h1>Pahami VLAN dengan mencoba, menguji, memperbaiki.</h1>
+            <p class="hero-lead">Latihan interaktif konfigurasi VLAN berbasis web untuk membantu siswa memahami VLAN ID, access port, trunk, ping, dan troubleshooting sebelum praktik di Cisco Packet Tracer.</p>
+            <div class="hero-actions">
+              <button class="btn primary lg" data-goto="simulation">Mulai simulasi</button>
+              <button class="btn ghost lg" data-goto="material">Pelajari konsep</button>
+            </div>
+            <ul class="hero-meta">
+              <li>3 level</li><li>5+ kasus</li><li>Umpan balik langsung</li>
+            </ul>
           </div>
-          <div class="network-illustration">
-            <div class="switch-box"><b>SW1</b><span>Catalyst 2960</span><div class="port-row"><i></i><i></i><i></i><i></i></div></div>
-            <div class="node n1">PC1<small>VLAN 10</small></div><div class="node n2">PC2<small>VLAN 20</small></div><div class="node n3">PC3<small>VLAN 30</small></div><div class="node n4">PC4<small>VLAN 10</small></div>
-            <svg viewBox="0 0 500 280" aria-hidden="true"><line x1="250" y1="120" x2="90" y2="225"/><line x1="250" y1="120" x2="210" y2="225"/><line x1="250" y1="120" x2="330" y2="225"/><line x1="250" y1="120" x2="450" y2="225"/></svg>
+
+          <div class="hero-visual">
+            <svg class="rack" viewBox="0 0 520 330" role="img" aria-label="Switch SW1 terhubung ke empat PC dengan kabel berwarna sesuai VLAN">
+              <defs>
+                <linearGradient id="panelG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3a5b"/><stop offset="1" stop-color="#0e2238"/></linearGradient>
+              </defs>
+              <!-- kabel (digambar di bawah switch) -->
+              <g fill="none" stroke-width="5" stroke-linecap="round">
+                <path class="cable c1" pathLength="1" d="M126 92 C126 176 70 166 70 238" stroke="#1f6feb"/>
+                <path class="cable c2" pathLength="1" d="M200 92 C200 176 200 166 200 238" stroke="#e8a317"/>
+                <path class="cable c3" pathLength="1" d="M311 92 C311 176 330 166 330 238" stroke="#7b5cd6"/>
+                <path class="cable c4" pathLength="1" d="M385 92 C385 176 460 166 460 238" stroke="#1f6feb"/>
+              </g>
+              <!-- switch -->
+              <rect x="86" y="22" width="348" height="92" rx="16" fill="url(#panelG)"/>
+              <text x="110" y="52" class="sw-name">SW1</text>
+              <text x="410" y="51" class="sw-model" text-anchor="end">Catalyst 2960</text>
+              <g>
+                <circle class="led on l1" cx="126" cy="68" r="3.4"/><circle class="led" cx="163" cy="68" r="3.4"/><circle class="led on l2" cx="200" cy="68" r="3.4"/><circle class="led" cx="237" cy="68" r="3.4"/>
+                <circle class="led" cx="274" cy="68" r="3.4"/><circle class="led on l3" cx="311" cy="68" r="3.4"/><circle class="led" cx="348" cy="68" r="3.4"/><circle class="led on l4" cx="385" cy="68" r="3.4"/>
+              </g>
+              <g class="ports" fill="#08182a" stroke="#2f4f72">
+                <rect x="113" y="78" width="26" height="22" rx="4"/><rect x="150" y="78" width="26" height="22" rx="4"/><rect x="187" y="78" width="26" height="22" rx="4"/><rect x="224" y="78" width="26" height="22" rx="4"/>
+                <rect x="261" y="78" width="26" height="22" rx="4"/><rect x="298" y="78" width="26" height="22" rx="4"/><rect x="335" y="78" width="26" height="22" rx="4"/><rect x="372" y="78" width="26" height="22" rx="4"/>
+              </g>
+              <g stroke="none">
+                <rect x="117" y="84" width="18" height="12" rx="2" fill="#1f6feb"/><rect x="191" y="84" width="18" height="12" rx="2" fill="#e8a317"/>
+                <rect x="302" y="84" width="18" height="12" rx="2" fill="#7b5cd6"/><rect x="376" y="84" width="18" height="12" rx="2" fill="#1f6feb"/>
+              </g>
+              <!-- PC -->
+              <g class="pc-node">
+                <rect x="18" y="238" width="104" height="78" rx="14" stroke="#1f6feb"/><text x="70" y="267" class="pc-name">PC1</text>
+                <rect x="36" y="278" width="68" height="24" rx="12" fill="#eaf2ff"/><text x="70" y="295" class="pc-vlan" fill="#1559c7">VLAN 10</text>
+              </g>
+              <g class="pc-node">
+                <rect x="148" y="238" width="104" height="78" rx="14" stroke="#e8a317"/><text x="200" y="267" class="pc-name">PC2</text>
+                <rect x="166" y="278" width="68" height="24" rx="12" fill="#fff4dc"/><text x="200" y="295" class="pc-vlan" fill="#9a6a05">VLAN 20</text>
+              </g>
+              <g class="pc-node">
+                <rect x="278" y="238" width="104" height="78" rx="14" stroke="#7b5cd6"/><text x="330" y="267" class="pc-name">PC3</text>
+                <rect x="296" y="278" width="68" height="24" rx="12" fill="#f0ebfc"/><text x="330" y="295" class="pc-vlan" fill="#5b3fb3">VLAN 30</text>
+              </g>
+              <g class="pc-node">
+                <rect x="408" y="238" width="104" height="78" rx="14" stroke="#1f6feb"/><text x="460" y="267" class="pc-name">PC4</text>
+                <rect x="426" y="278" width="68" height="24" rx="12" fill="#eaf2ff"/><text x="460" y="295" class="pc-vlan" fill="#1559c7">VLAN 10</text>
+              </g>
+            </svg>
           </div>
         </div>
 
-        <div class="section-head"><div><span class="eyebrow">JALUR BELAJAR</span><h2>Belajar bertahap, bukan sekadar hafal perintah</h2></div><span class="pill">PBL + Peer Tutoring</span></div>
-        <div class="feature-grid">
-          <article class="feature card"><span class="feature-icon blue">01</span><h3>Prediksi</h3><p>Tentukan dugaan hasil ping dan pahami hubungan VLAN dengan broadcast domain.</p></article>
-          <article class="feature card"><span class="feature-icon orange">02</span><h3>Konfigurasi</h3><p>Ketik perintah CLI terbimbing untuk membuat VLAN dan menetapkan port access.</p></article>
-          <article class="feature card"><span class="feature-icon purple">03</span><h3>Uji & Diagnosis</h3><p>Jalankan ping virtual, telusuri gejala, lalu perbaiki konfigurasi yang salah.</p></article>
-          <article class="feature card"><span class="feature-icon green">04</span><h3>Refleksi</h3><p>Hubungkan hasil simulasi dengan praktik nyata di Cisco Packet Tracer.</p></article>
+        <div class="section-head">
+          <div><h2>Belajar bertahap, bukan sekadar hafal perintah</h2><p class="section-desc">Empat langkah yang selalu sama di setiap skenario.</p></div>
+          <span class="pill">PBL + Peer Tutoring</span>
         </div>
 
-        <div class="stats-grid">
-          <div class="stat card"><span>Level Inti</span><b>1</b><small>VLAN + access port</small></div>
-          <div class="stat card"><span>Pengayaan</span><b>2–3</b><small>Trunk + inter-VLAN</small></div>
-          <div class="stat card"><span>Target KKM</span><b>75</b><small>Sesuai modul ajar</small></div>
-          <div class="stat card"><span>Skenario</span><b>5+</b><small>Konfigurasi & diagnosis</small></div>
-        </div>
+        <ol class="path">
+          <li class="step s-blue"><span class="step-node">1</span><h3>Prediksi</h3><p>Tentukan dugaan hasil ping dan pahami hubungan VLAN dengan broadcast domain.</p></li>
+          <li class="step s-amber"><span class="step-node">2</span><h3>Konfigurasi</h3><p>Ketik perintah CLI terbimbing untuk membuat VLAN dan menetapkan port access.</p></li>
+          <li class="step s-violet"><span class="step-node">3</span><h3>Uji dan diagnosis</h3><p>Jalankan ping virtual, telusuri gejala, lalu perbaiki konfigurasi yang salah.</p></li>
+          <li class="step s-green"><span class="step-node">4</span><h3>Refleksi</h3><p>Hubungkan hasil simulasi dengan praktik nyata di Cisco Packet Tracer.</p></li>
+        </ol>
+
+        <dl class="specs">
+          <div><dt>Level inti</dt><dd>1</dd><small>VLAN + access port</small></div>
+          <div><dt>Pengayaan</dt><dd>2–3</dd><small>Trunk + inter-VLAN</small></div>
+          <div><dt>Target KKM</dt><dd>75</dd><small>Sesuai modul ajar</small></div>
+          <div><dt>Skenario</dt><dd>5+</dd><small>Konfigurasi dan diagnosis</small></div>
+        </dl>
       </section>
 
+      <!-- ========== MATERI ========== -->
       <section class="view" id="view-material">
-        <div class="section-head"><div><span class="eyebrow">MATERI RINGKAS</span><h2>Konsep yang perlu kamu kuasai</h2></div><button class="btn primary" data-goto="simulation">Lanjut Simulasi →</button></div>
+        <div class="section-head"><div><h2>Konsep yang perlu kamu kuasai</h2><p class="section-desc">Lima materi ringkas. Baca urut, lalu coba di simulasi.</p></div><button class="btn primary" data-goto="simulation">Lanjut ke simulasi</button></div>
         <div class="material-layout">
           <div class="material-tabs card" id="materialTabs"></div>
           <div class="material-content card" id="materialContent"></div>
         </div>
       </section>
 
-
+      <!-- ========== PETUNJUK ========== -->
       <section class="view" id="view-guide">
-        <div class="section-head"><div><span class="eyebrow">PETUNJUK PRAKTIK</span><h2>Konfigurasi yang perlu ditulis di VLANesia</h2><p class="section-desc">Ikuti urutan sesuai level. Perintah Level 1 memakai sintaks Cisco dasar; Level 2–3 menggunakan perintah simulasi khusus VLANesia untuk membantu memahami konsep.</p></div><button class="btn primary" data-goto="simulation">Buka Simulasi →</button></div>
+        <div class="section-head"><div><h2>Konfigurasi yang perlu ditulis di VLANesia</h2><p class="section-desc">Ikuti urutan sesuai level. Perintah Level 1 memakai sintaks Cisco dasar; Level 2–3 memakai perintah simulasi khusus VLANesia untuk membantu memahami konsep.</p></div><button class="btn primary" data-goto="simulation">Buka simulasi</button></div>
 
         <div class="guide-grid">
           <article class="card guide-card">
-            <div class="guide-head"><span class="guide-number">1</span><div><span class="eyebrow">LEVEL 1 · DASAR</span><h3>Membuat VLAN 10, 20, dan 30</h3></div></div>
+            <div class="guide-head"><span class="guide-number">1</span><div><span class="guide-tag">Level 1 · Dasar</span><h3>Membuat VLAN 10, 20, dan 30</h3></div></div>
             <p>Masuk ke mode konfigurasi, buat tiga VLAN sesuai divisi, lalu beri nama.</p>
             <pre class="code-block">enable
 configure terminal
@@ -103,7 +160,7 @@ exit</pre>
           </article>
 
           <article class="card guide-card">
-            <div class="guide-head"><span class="guide-number">2</span><div><span class="eyebrow">LEVEL 1 · ACCESS PORT</span><h3>Menempatkan PC ke VLAN</h3></div></div>
+            <div class="guide-head"><span class="guide-number">2</span><div><span class="guide-tag">Level 1 · Access port</span><h3>Menempatkan PC ke VLAN</h3></div></div>
             <p>Untuk skenario utama, Fa0/1 dan Fa0/4 ditempatkan ke VLAN 10. Contoh port lain ditunjukkan agar pembagian tiga divisi jelas.</p>
             <pre class="code-block">interface fastEthernet 0/1
 switchport mode access
@@ -124,7 +181,7 @@ exit</pre>
           </article>
 
           <article class="card guide-card">
-            <div class="guide-head"><span class="guide-number">3</span><div><span class="eyebrow">VERIFIKASI</span><h3>Memeriksa dan menyimpan konfigurasi</h3></div></div>
+            <div class="guide-head"><span class="guide-number">3</span><div><span class="guide-tag">Verifikasi</span><h3>Memeriksa dan menyimpan konfigurasi</h3></div></div>
             <p>Periksa tabel VLAN virtual, lalu simpan konfigurasi sebelum melakukan uji ping.</p>
             <pre class="code-block">show vlan brief
 write memory</pre>
@@ -132,7 +189,7 @@ write memory</pre>
           </article>
 
           <article class="card guide-card">
-            <div class="guide-head"><span class="guide-number">4</span><div><span class="eyebrow">DEBUGGING</span><h3>Perintah perbaikan khusus simulator</h3></div></div>
+            <div class="guide-head"><span class="guide-number">4</span><div><span class="guide-tag">Debugging</span><h3>Perintah perbaikan khusus simulator</h3></div></div>
             <p>Untuk membantu latihan diagnosis, VLANesia menyediakan beberapa perintah sederhana berikut.</p>
             <pre class="code-block">fix ip pc4 192.168.10.12
 allow vlan 20 trunk
@@ -142,7 +199,7 @@ fix gateway pc2 192.168.20.1</pre>
           </article>
 
           <article class="card guide-card wide">
-            <div class="guide-head"><span class="guide-number">5</span><div><span class="eyebrow">URUTAN CEPAT</span><h3>Kalau bingung, kerjakan dengan urutan ini</h3></div></div>
+            <div class="guide-head"><span class="guide-number">5</span><div><span class="guide-tag">Urutan cepat</span><h3>Kalau bingung, kerjakan dengan urutan ini</h3></div></div>
             <div class="quick-steps">
               <span><b>1.</b> <code>enable</code></span>
               <span><b>2.</b> <code>configure terminal</code></span>
@@ -157,76 +214,91 @@ fix gateway pc2 192.168.20.1</pre>
         </div>
       </section>
 
+      <!-- ========== SIMULASI ========== -->
       <section class="view" id="view-simulation">
         <div class="simulation-head">
-          <div><span class="eyebrow">LAB INTERAKTIF</span><h2>Konfigurasi VLAN — Level <span id="levelLabel">1</span></h2></div>
-          <div class="scenario-select"><label>Skenario</label><select id="scenarioSelect"><option value="1">1 · VLAN 10 benar</option><option value="2">2 · Port salah VLAN</option><option value="3">3 · IP tidak satu segmen</option><option value="4">4 · Trunk memblokir VLAN 20</option><option value="5">5 · Gateway / inter-VLAN</option></select></div>
+          <div><h2>Konfigurasi VLAN — Level <span id="levelLabel">1</span></h2><p class="section-desc">Atur switch lewat CLI, lalu uji ping dari PC.</p></div>
+          <div class="scenario-select"><label for="scenarioSelect">Skenario</label><select id="scenarioSelect"><option value="1">1 · VLAN 10 benar</option><option value="2">2 · Port salah VLAN</option><option value="3">3 · IP tidak satu segmen</option><option value="4">4 · Trunk memblokir VLAN 20</option><option value="5">5 · Gateway / inter-VLAN</option></select></div>
         </div>
+
         <div class="sim-grid">
           <div class="topology-card card">
             <div class="card-title"><div><b>Topologi</b><small id="scenarioDesc">SW1 dan empat PC</small></div><div class="legend"><span class="v10">VLAN 10</span><span class="v20">VLAN 20</span><span class="v30">VLAN 30</span></div></div>
             <div class="topology" id="topology"></div>
             <div class="task-box"><b>Misi</b><p id="missionText"></p></div>
           </div>
-          <div class="terminal-card card">
-            <div class="terminal-title"><div><span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><b>CLI Switch SW1</b></div><button class="text-btn" id="resetBtn">Reset</button></div>
+
+          <div class="terminal-card">
+            <div class="terminal-title"><div class="terminal-name"><span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><b>CLI Switch SW1</b></div><button class="text-btn" id="resetBtn" type="button">Reset</button></div>
+
             <div class="cli-assistant" id="cliAssistant">
-              <div class="cli-assistant-head"><div><span class="eyebrow">CLI ASSISTANT</span><b id="commandGuideTitle">Perintah untuk skenario ini</b></div><span class="network-live"><i></i> Guided Lab</span></div>
+              <div class="cli-assistant-head"><div><b id="commandGuideTitle">Perintah untuk skenario ini</b></div><span class="network-live"><i></i> Terpandu</span></div>
               <p id="commandGuideMeta">Klik salah satu perintah untuk memasukkannya ke terminal, lalu tekan Kirim.</p>
               <div class="command-guide-list" id="commandGuideList"></div>
             </div>
+
             <div class="terminal" id="terminalOutput"><div class="term-line muted">VLANesia CLI Simulator v1.0</div><div class="term-line">Switch&gt; <span class="muted">ketik <b>enable</b> untuk memulai</span></div></div>
+
             <div class="cli-next-command" id="cliNextCommand">
-              <div class="cli-next-left"><span class="next-badge">NEXT</span><div><small>Perintah yang disarankan</small><code id="nextCommandText">enable</code></div></div>
-              <button type="button" class="next-insert" id="nextCommandInsert">Isi perintah →</button>
+              <div class="cli-next-left"><span class="next-badge">Saran</span><code id="nextCommandText">enable</code></div>
+              <button type="button" class="next-insert" id="nextCommandInsert">Isi ke terminal</button>
             </div>
-            <form class="terminal-input" id="cliForm"><span id="prompt">Switch&gt;</span><input id="cliInput" autocomplete="off" spellcheck="false" placeholder="Saran: enable" /><button class="cli-send" id="cliSendBtn" type="submit">Kirim ↵</button></form>
-            <div class="cli-helper-row"><span id="cliProgressText">Langkah 1 dari 1</span><span>Tip: jalankan <b>satu perintah per baris</b></span></div>
-            <div class="sim-actions"><button class="btn ghost" id="hintBtn">💡 Petunjuk Bertahap</button><button class="btn primary" id="pingBtn">⚡ Uji Ping</button></div>
+            <form class="terminal-input" id="cliForm"><span id="prompt">Switch&gt;</span><input id="cliInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Saran: enable" aria-label="Perintah CLI" /><button class="cli-send" id="cliSendBtn" type="submit">Kirim</button></form>
+            <div class="cli-helper-row"><span id="cliProgressText">Langkah 1 dari 1</span><span>Satu perintah per baris</span></div>
+            <div class="sim-actions"><button class="btn ghost-dark" id="hintBtn" type="button">Petunjuk bertahap</button><button class="btn primary" id="pingBtn" type="button">Uji ping</button></div>
           </div>
         </div>
+
         <div class="sim-lower-grid">
-          <div class="card"><div class="card-title"><b>Tabel VLAN Virtual</b><small>Hasil konfigurasi saat ini</small></div><div class="table-wrap"><table><thead><tr><th>VLAN</th><th>Nama</th><th>Port</th><th>Status</th></tr></thead><tbody id="vlanTable"></tbody></table></div></div>
-          <div class="card"><div class="card-title"><b>Progress Misi</b><small>Checklist konfigurasi</small></div><div id="missionChecklist" class="checklist"></div></div>
+          <div class="card"><div class="card-title"><b>Tabel VLAN virtual</b><small>Hasil konfigurasi saat ini</small></div><div class="table-wrap"><table><thead><tr><th>VLAN</th><th>Nama</th><th>Port</th><th>Status</th></tr></thead><tbody id="vlanTable"></tbody></table></div></div>
+          <div class="card"><div class="card-title"><b>Progres misi</b><small>Checklist konfigurasi</small></div><div id="missionChecklist" class="checklist"></div></div>
         </div>
       </section>
 
+      <!-- ========== DIAGNOSTIK ========== -->
       <section class="view" id="view-diagnostic">
-        <div class="section-head"><div><span class="eyebrow">HASIL & DIAGNOSTIK</span><h2>Temukan penyebab sebelum melihat jawabannya</h2></div><button class="btn primary" data-goto="simulation">← Perbaiki Konfigurasi</button></div>
+        <div class="section-head"><div><h2>Temukan penyebab sebelum melihat jawabannya</h2><p class="section-desc">Periksa dari yang paling dasar: link, VLAN, IP, lalu routing.</p></div><button class="btn primary" data-goto="simulation">Perbaiki konfigurasi</button></div>
         <div class="diagnostic-grid">
-          <div class="card ping-card" id="pingCard"><div class="card-title"><b>Hasil Ping</b><span id="pingBadge" class="badge neutral">Belum diuji</span></div><div id="pingSummary" class="ping-summary"><div class="ping-stat"><small>Status</small><b>Menunggu uji</b></div><div class="ping-stat"><small>Packet loss</small><b>—</b></div><div class="ping-stat"><small>Fokus cek</small><b>Jalankan Uji Ping</b></div></div><div id="pingOutput" class="ping-console">Jalankan Uji Ping dari halaman Simulasi.</div></div>
-          <div class="card"><div class="card-title"><b>Jejak Diagnosis</b><small>Periksa dari yang paling dasar</small></div><div id="diagSteps" class="diag-steps"></div></div>
-          <div class="card insight"><span class="eyebrow">PETUNJUK BERTAHAP</span><h3 id="diagTitle">Belum ada diagnosis</h3><p id="diagExplanation">Setelah menjalankan ping, VLANesia akan menjelaskan gejala dan aturan yang perlu diperiksa tanpa langsung menghapus jawabanmu.</p></div>
+          <div class="card ping-card" id="pingCard"><div class="card-title"><b>Hasil ping</b><span id="pingBadge" class="badge neutral">Belum diuji</span></div><div id="pingSummary" class="ping-summary"><div class="ping-stat"><small>Status</small><b>Menunggu uji</b></div><div class="ping-stat"><small>Packet loss</small><b>—</b></div><div class="ping-stat"><small>Fokus cek</small><b>Jalankan uji ping</b></div></div><div id="pingOutput" class="ping-console">Jalankan uji ping dari halaman Simulasi.</div></div>
+          <div class="card"><div class="card-title"><b>Jejak diagnosis</b><small>Periksa dari yang paling dasar</small></div><div id="diagSteps" class="diag-steps"></div></div>
+          <div class="card insight"><h3 id="diagTitle">Belum ada diagnosis</h3><p id="diagExplanation">Setelah menjalankan ping, VLANesia akan menjelaskan gejala dan aturan yang perlu diperiksa tanpa langsung menghapus jawabanmu.</p></div>
         </div>
       </section>
 
+      <!-- ========== EVALUASI ========== -->
       <section class="view" id="view-evaluation">
-        <div class="section-head"><div><span class="eyebrow">EVALUASI & REFLEKSI</span><h2>Uji pemahamanmu setelah berlatih</h2></div><span class="pill">5 soal · KKM 75</span></div>
+        <div class="section-head"><div><h2>Uji pemahamanmu setelah berlatih</h2><p class="section-desc">Jawab semua soal, isi refleksi, lalu kirim.</p></div><span class="pill">5 soal · KKM 75</span></div>
         <form id="evaluationForm" class="evaluation-layout">
           <div class="quiz-list" id="quizList"></div>
-          <div class="card reflection-card"><h3>Refleksi</h3><label>Kesulitan utama yang kamu alami<textarea id="reflectionDifficulty" placeholder="Contoh: saya masih sering tertukar access port dan trunk..."></textarea></label><label>Manfaat VLAN di dunia kerja<textarea id="reflectionBenefit" placeholder="Tuliskan dengan bahasamu sendiri..."></textarea></label><button class="btn primary full" type="submit">Kirim Evaluasi</button><div id="evalResult" class="eval-result hidden"></div></div>
+          <div class="card reflection-card"><h3>Refleksi</h3><label>Kesulitan utama yang kamu alami<textarea id="reflectionDifficulty" placeholder="Contoh: saya masih sering tertukar access port dan trunk..."></textarea></label><label>Manfaat VLAN di dunia kerja<textarea id="reflectionBenefit" placeholder="Tuliskan dengan bahasamu sendiri..."></textarea></label><button class="btn primary full" type="submit">Kirim evaluasi</button><div id="evalResult" class="eval-result hidden"></div></div>
         </form>
       </section>
 
+      <!-- ========== DASHBOARD GURU ========== -->
       <section class="view" id="view-dashboard">
-        <div class="section-head"><div><span class="eyebrow">DASHBOARD GURU</span><h2>Rekap anonim aktivitas siswa</h2></div><button class="btn ghost" id="refreshDashboard">↻ Muat Ulang</button></div>
+        <div class="section-head"><div><h2>Rekap anonim aktivitas siswa</h2><p class="section-desc">Ringkasan percobaan dan evaluasi yang tersimpan di database.</p></div><button class="btn ghost" id="refreshDashboard">Muat ulang</button></div>
         <div class="dashboard-stats" id="dashboardStats"></div>
         <div class="dashboard-grid">
-          <div class="card"><div class="card-title"><b>Kesalahan yang Paling Sering</b><small>Berdasarkan percobaan tersimpan</small></div><div id="errorBars" class="bars"></div></div>
-          <div class="card"><div class="card-title"><b>Kinerja per Skenario</b><small>Skor rata-rata & keberhasilan</small></div><div id="scenarioStats" class="scenario-stats"></div></div>
+          <div class="card"><div class="card-title"><b>Kesalahan yang paling sering</b><small>Berdasarkan percobaan tersimpan</small></div><div id="errorBars" class="bars"></div></div>
+          <div class="card"><div class="card-title"><b>Kinerja per skenario</b><small>Skor rata-rata dan keberhasilan</small></div><div id="scenarioStats" class="scenario-stats"></div></div>
         </div>
-        <div class="card"><div class="card-title"><b>Evaluasi Terbaru</b><small>Alias siswa, tanpa data pribadi wajib</small></div><div class="table-wrap"><table><thead><tr><th>Alias</th><th>Kelas</th><th>Skor</th><th>Benar</th><th>Waktu</th></tr></thead><tbody id="recentTable"></tbody></table></div></div>
+        <div class="card"><div class="card-title"><b>Evaluasi terbaru</b><small>Alias siswa, tanpa data pribadi wajib</small></div><div class="table-wrap"><table><thead><tr><th>Alias</th><th>Kelas</th><th>Skor</th><th>Benar</th><th>Waktu</th></tr></thead><tbody id="recentTable"></tbody></table></div></div>
       </section>
+
+      <footer class="site-footer">Simulasi edukatif. Bukan emulator Cisco IOS; dibuat sebagai pendamping Cisco Packet Tracer.</footer>
     </main>
   </div>
 
+  <!-- ========== LOGIN ========== -->
   <div class="modal-backdrop" id="sessionModal">
-    <div class="modal card">
-      <img class="modal-brand-logo" src="/assets/vlanesia-logo.png" alt="Logo VLANesia"><span class="eyebrow">SELAMAT DATANG</span><h2>Masuk ke VLANesia</h2><p>Gunakan alias saja. Data disimpan untuk rekap pembelajaran tanpa meminta identitas pribadi lengkap.</p>
-      <form id="sessionForm"><label>Alias siswa<input id="aliasInput" maxlength="30" placeholder="Contoh: Raihan-01" required></label><label>Kelas<input id="classInput" maxlength="30" value="X TJKT"></label><div id="loginError" class="login-error hidden"></div><button class="btn primary full" id="loginSubmitBtn" type="submit">Mulai Belajar</button></form>
+    <div class="modal card" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <img class="modal-brand-logo" src="/assets/vlanesia-logo.png" alt="Logo VLANesia" width="84" height="84">
+      <h2 id="loginTitle">Masuk ke VLANesia</h2>
+      <p>Gunakan alias saja. Data disimpan untuk rekap pembelajaran tanpa meminta identitas pribadi lengkap.</p>
+      <form id="sessionForm"><label>Alias siswa<input id="aliasInput" maxlength="30" placeholder="Contoh: Raihan-01" autocomplete="nickname" required></label><label>Kelas<input id="classInput" maxlength="30" value="X TJKT"></label><div id="loginError" class="login-error hidden"></div><button class="btn primary full lg" id="loginSubmitBtn" type="submit">Mulai belajar</button></form>
     </div>
   </div>
-  <div class="toast" id="toast"></div>
-  <script src="/app.js?v=20261109a"></script>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js?v=20261111a"></script>
 </body>
 </html>
